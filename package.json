@@ -1,0 +1,14 @@
+{
+  "name": "skymap-token",
+  "version": "0.1.0",
+  "author": "Marek Tlacbaba",
+  "dependencies": {
+    "zeppelin-solidity": "^1.10.0"
+  },
+  "devDependencies": {
+    "chai": "4.1.2",
+    "chai-as-promised": "7.1.1",
+    "chai-bignumber": "2.0.2",
+    "shx": "0.2.2"
+  }
+}
