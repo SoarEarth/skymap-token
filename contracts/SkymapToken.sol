@@ -21,4 +21,12 @@ contract SkymapToken is ERC827Token, PausableToken {
         balances[beneficier] = INITIAL_SUPPLY;
         emit Transfer(0x0, beneficier, INITIAL_SUPPLY);
     }
+    
+    /**
+   * @dev Override renounceOwnership to make sure that token will be unpaused
+   *    when ownership will be renounced
+   */
+    function renounceOwnership() public onlyOwner whenNotPaused {
+        super.renounceOwnership();
+    }
 }

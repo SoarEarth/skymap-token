@@ -25,12 +25,43 @@ contract('SkymapToken', function ([owner, user1, user2]) {
   });
 
   it("..is pausable and only owner can pause and unpause token", async function () {
-    let tx = await this.token.pause({from: user1}).should.be.rejectedWith(Error);
-    tx = await this.token.pause({ from: owner});
-    txSuccess(tx);
-    tx = await this.token.unpause({from: user1}).should.be.rejectedWith(Error);
-    tx = await this.token.unpause({ from: owner});
-    txSuccess(tx);
+    let paused = await this.token.paused();
+    paused.should.be.false;  
+    await this.token.pause({from: user1}).should.be.rejectedWith(Error);
+    await this.token.pause({ from: owner});
+    
+    paused = await this.token.paused();
+    paused.should.be.true;  
+    await this.token.unpause({from: user1}).should.be.rejectedWith(Error);
+    await this.token.unpause({ from: owner});
+    
+    paused = await this.token.paused();
+    paused.should.be.false;
+  });
+  
+  it("..ownership can not be renounce when token is paused", async function () {
+    await this.token.pause({ from: owner });
+    let paused = await this.token.paused();
+    paused.should.be.true;
+    await this.token.renounceOwnership({ from: owner }).should.be.rejectedWith(Error);
+
+    await this.token.unpause({ from: owner });
+    paused = await this.token.paused();
+    paused.should.be.false;
+    await this.token.renounceOwnership({ from: owner });
+    let newOwner = await this.token.owner();
+    newOwner.should.be.equal('0x0000000000000000000000000000000000000000');
+    await this.token.pause({ from: owner }).should.be.rejectedWith(Error);
+  });
+
+  it("..ownership can be renounce when token is unpaused and then cannot be paused again", async function () {
+    let paused = await this.token.paused();
+    paused.should.be.false;
+    await this.token.renounceOwnership({ from: owner });
+    let newOwner = await this.token.owner();
+    newOwner.should.be.equal('0x0000000000000000000000000000000000000000');
+    await this.token.pause({ from: owner }).should.be.rejectedWith(Error);
+    await this.token.transferOwnership(owner, { from: owner }).should.be.rejectedWith(Error);
   });
 
   it("..transfer is pausable", async function () {
@@ -100,30 +131,6 @@ contract('SkymapToken', function ([owner, user1, user2]) {
     balance = await this.token.balanceOf(user2);
     balance.should.be.bignumber.equal(amount);
   });
-
-  it("..transferFrom is pausable", async function () {
-    await this.token.approve(user1, amount, {from: owner});
-    await this.token.transferFrom(owner, user1, amount, {from: user1});
-    let balance = await this.token.balanceOf(user1);
-    balance.should.be.bignumber.equal(amount);
-    await this.token.approve(user2, amount, {from: owner});
-    
-    await this.token.pause({ from: owner});
-    let allowance = await this.token.allowance(owner, user2);
-    allowance.should.be.bignumber.equal(amount);
-
-    await this.token.transferFrom(owner, user2, amount, {from: user2}).should.be.rejectedWith(Error);
-    balance = await this.token.balanceOf(user2);
-    balance.should.be.bignumber.equal(zero);
-
-    await this.token.unpause({ from: owner});
-
-    await this.token.transferFrom(owner, user2, amount, {from: user2});
-    balance = await this.token.balanceOf(user2);
-    balance.should.be.bignumber.equal(amount);
-  });
-
-
 
 });
 
