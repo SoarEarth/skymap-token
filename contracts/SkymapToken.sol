@@ -1,6 +1,7 @@
 pragma solidity ^0.4.23;
 
 import "../node_modules/zeppelin-solidity/contracts/token/ERC827/ERC827Token.sol";
+import "../node_modules/zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 
 /**
  * @title SkymapTokenMock is just mock ERC827 token implementation used 
@@ -8,7 +9,7 @@ import "../node_modules/zeppelin-solidity/contracts/token/ERC827/ERC827Token.sol
  *
  */
  
-contract SkymapToken is ERC827Token {
+contract SkymapToken is ERC827Token, PausableToken {
 
     string public constant symbol = "SKYM";
     string public constant name = "Skymap";
@@ -20,5 +21,4 @@ contract SkymapToken is ERC827Token {
         balances[beneficier] = INITIAL_SUPPLY;
         emit Transfer(0x0, beneficier, INITIAL_SUPPLY);
     }
-
 }
