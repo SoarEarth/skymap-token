@@ -7,19 +7,18 @@ const should = require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should();
 
-const nominatedBeneficier = '0x25278cD85046CB44C673dd98ab5A18d582f03d79';
 const intitialSupply = 510000000 * (10 ** 18);
 const amount = 1 * (10 ** 18);
 const zero = new BigNumber(0);
 
-contract('SkymapToken', function ([owner, user1, user2]) {
+contract('SkymapToken', function ([owner, user1, user2, nominatedBeneficier, _]) {
 
   beforeEach(async function () {
     this.token = await Skymap.new(owner);
   });
 
   it("..init supply is assigned to nominated beneficier", async function () {
-    let token = await Skymap.new(nominatedBeneficier);
+    let token = await Skymap.new(nominatedBeneficier, {from: owner});
     let balance = await token.balanceOf(nominatedBeneficier);
     balance.should.be.bignumber.equal(intitialSupply);
   });
@@ -110,7 +109,7 @@ contract('SkymapToken', function ([owner, user1, user2]) {
     allowance.should.be.bignumber.equal(zero);
   });
 
-  it("..transferFrom is pausable", async function () {
+  it("..transferFrom is not pausable", async function () {
     await this.token.approve(user1, amount, {from: owner});
     await this.token.transferFrom(owner, user1, amount, {from: user1});
     let balance = await this.token.balanceOf(user1);
@@ -121,27 +120,25 @@ contract('SkymapToken', function ([owner, user1, user2]) {
     let allowance = await this.token.allowance(owner, user2);
     allowance.should.be.bignumber.equal(amount);
 
-    await this.token.transferFrom(owner, user2, amount, {from: user2}).should.be.rejectedWith(Error);
-    balance = await this.token.balanceOf(user2);
-    balance.should.be.bignumber.equal(zero);
-
-    await this.token.unpause({ from: owner});
-
-    await this.token.transferFrom(owner, user2, amount, {from: user2});
+    await this.token.transferFrom(owner, user2, amount, {from: user2}).should.be.fulfilled;
     balance = await this.token.balanceOf(user2);
     balance.should.be.bignumber.equal(amount);
   });
+  
+  it("..owner can approve token in paused state", async function () {
+    await this.token.pause({ from: owner});
+    await this.token.transferOwnership(nominatedBeneficier, { from: owner});
+    await this.token.approveOwner(user1, amount, {from: nominatedBeneficier}).should.be.fulfilled;
+    let allowance = await this.token.allowance(nominatedBeneficier, user1);
+    allowance.should.be.bignumber.equal(amount);
+  });
+
+  it("..only owner can approve token in paused state", async function () {
+    await this.token.pause({ from: owner});
+    await this.token.transferOwnership(nominatedBeneficier, { from: owner});
+    await this.token.approveOwner(user1, amount, {from: owner}).should.be.rejectedWith(Error);
+    let allowance = await this.token.allowance(nominatedBeneficier, user1);
+    allowance.should.be.bignumber.equal(zero);
+  });
 
 });
-
-const txSuccess = function(tx) {
-  let success = new BigNumber(1);
-  let status = new BigNumber(tx.receipt.status);
-  status.should.be.bignumber.equal(success);
-}
-
-const txFailure = function(tx) {
-  let success = new BigNumber(0);
-  let status = new BigNumber(tx.receipt.status);
-  status.should.be.bignumber.equal(success);
-}
