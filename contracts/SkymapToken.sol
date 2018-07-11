@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 
 import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
-import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
+import "../node_modules/openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 
 /**
  * @title SkymapToken
@@ -20,44 +20,64 @@ contract SkymapToken is StandardToken, Pausable {
     uint8 public constant decimals = 18;
     uint public INITIAL_SUPPLY = 510000000 * (uint(10) ** decimals);
 
+    mapping (address => bool) public distributors;
+    bool public distributionFinished;
+
+    //todo
+    // add events when distributor is addedd and removed
+    // write tests to cover all situations
+
     constructor(address beneficier) public {
         totalSupply_ = INITIAL_SUPPLY;
         balances[beneficier] = INITIAL_SUPPLY;
+        distributionFinished = false;
+        paused = true;
         emit Transfer(0x0, beneficier, INITIAL_SUPPLY);
     }
-    
-    /**
-    * @dev Override renounceOwnership to make sure that token will be unpaused
-    * when ownership will be renounced
-    */
-    function renounceOwnership() public onlyOwner whenNotPaused {
-        super.renounceOwnership();
-    }
-    /**
-    * @dev Owner is able to approve token for transfer in paused state to allow 
-    * distribution tokens during presale and public sale
-    */
-    function approveOwner(
-        address _spender,
-        uint256 _value
-    )
-    public
-    whenPaused
-    onlyOwner
-    returns (bool)
-    {
-        return super.approve(_spender, _value);
+
+    modifier whenNotPausedOrDistributor() {
+        require(!paused || (!distributionFinished && distributors[msg.sender] == true));
+        _;
     }
 
+    modifier whenDistributionNotFinished() {
+        require(!distributionFinished);
+        _;
+    }
+
+    function addDistributorAddress (address _address) public onlyOwner whenDistributionNotFinished {
+        distributors[_address] = true;
+    }
+    
+    function removeDistributorAddress (address _address) public onlyOwner whenDistributionNotFinished {
+        distributors[_address] = false;
+    }
+
+    function finishDistribution() public onlyOwner whenDistributionNotFinished {
+        distributionFinished = true;
+    }
+    
     function transfer(
         address _to,
         uint256 _value
     )
     public
-    whenNotPaused
+    whenNotPausedOrDistributor
     returns (bool)
     {
         return super.transfer(_to, _value);
+    }
+
+    function transferFrom(
+        address _from,
+        address _to,
+        uint256 _value
+    )
+    public
+    whenNotPausedOrDistributor
+    returns (bool)
+    {
+        return super.transferFrom(_from, _to, _value);
     }
 
     function approve(
@@ -65,7 +85,7 @@ contract SkymapToken is StandardToken, Pausable {
         uint256 _value
     )
     public
-    whenNotPaused
+    whenNotPausedOrDistributor
     returns (bool)
     {
         return super.approve(_spender, _value);
@@ -76,7 +96,7 @@ contract SkymapToken is StandardToken, Pausable {
         uint _addedValue
     )
     public
-    whenNotPaused
+    whenNotPausedOrDistributor
     returns (bool success)
     {
         return super.increaseApproval(_spender, _addedValue);
@@ -87,7 +107,7 @@ contract SkymapToken is StandardToken, Pausable {
         uint _subtractedValue
     )
     public
-    whenNotPaused
+    whenNotPausedOrDistributor
     returns (bool success)
     {
         return super.decreaseApproval(_spender, _subtractedValue);
