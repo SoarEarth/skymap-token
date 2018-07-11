@@ -40,31 +40,6 @@ contract('SkymapToken', function ([owner, user1, user2, nominatedBeneficier, cro
     paused.should.be.false;
   });
   
-  it("..ownership can not be renounce when token is paused", async function () {
-    await this.token.pause({ from: owner });
-    let paused = await this.token.paused();
-    paused.should.be.true;
-    await this.token.renounceOwnership({ from: owner }).should.be.rejectedWith(Error);
-
-    await this.token.unpause({ from: owner });
-    paused = await this.token.paused();
-    paused.should.be.false;
-    await this.token.renounceOwnership({ from: owner });
-    let newOwner = await this.token.owner();
-    newOwner.should.be.equal('0x0000000000000000000000000000000000000000');
-    await this.token.pause({ from: owner }).should.be.rejectedWith(Error);
-  });
-
-  it("..ownership can be renounce when token is unpaused and then cannot be paused again", async function () {
-    let paused = await this.token.paused();
-    paused.should.be.false;
-    await this.token.renounceOwnership({ from: owner });
-    let newOwner = await this.token.owner();
-    newOwner.should.be.equal('0x0000000000000000000000000000000000000000');
-    await this.token.pause({ from: owner }).should.be.rejectedWith(Error);
-    await this.token.transferOwnership(owner, { from: owner }).should.be.rejectedWith(Error);
-  });
-
   it("..transfer is pausable", async function () {
     await this.token.transfer(user1, amount, {from: nominatedBeneficier});
     let balance = await this.token.balanceOf(user1);
@@ -111,7 +86,7 @@ contract('SkymapToken', function ([owner, user1, user2, nominatedBeneficier, cro
     allowance.should.be.bignumber.equal(zero);
   });
 
-  it("..transferFrom is not pausable", async function () {
+  it("..transferFrom is pausable", async function () {
     await this.token.approve(user1, amount, {from: nominatedBeneficier});
     await this.token.transferFrom(nominatedBeneficier, user1, amount, {from: user1});
     let balance = await this.token.balanceOf(user1);
@@ -122,39 +97,8 @@ contract('SkymapToken', function ([owner, user1, user2, nominatedBeneficier, cro
     let allowance = await this.token.allowance(nominatedBeneficier, user2);
     allowance.should.be.bignumber.equal(amount);
 
-    await this.token.transferFrom(nominatedBeneficier, user2, amount, {from: user2}).should.be.fulfilled;
+    await this.token.transferFrom(nominatedBeneficier, user2, amount, {from: user2}).should.be.rejectedWith(Error);
     balance = await this.token.balanceOf(user2);
-    balance.should.be.bignumber.equal(amount);
+    balance.should.be.bignumber.equal(zero);
   });
-  
-  it("..owner can approve token in paused state", async function () {
-    await this.token.pause({ from: owner});
-    await this.token.transferOwnership(nominatedBeneficier, { from: owner});
-    await this.token.approveOwner(user1, amount, {from: nominatedBeneficier}).should.be.fulfilled;
-    let allowance = await this.token.allowance(nominatedBeneficier, user1);
-    allowance.should.be.bignumber.equal(amount);
-  });
-
-  it("..only owner can approve token in paused state", async function () {
-    await this.token.pause({ from: owner});
-    await this.token.transferOwnership(nominatedBeneficier, { from: owner});
-    await this.token.approveOwner(user1, amount, {from: owner}).should.be.rejectedWith(Error);
-    let allowance = await this.token.allowance(nominatedBeneficier, user1);
-    allowance.should.be.bignumber.equal(zero);
-  });
-
-  it("..public crowdsale can distribute approved tokens when paused", async function () {
-    await this.token.pause({ from: owner});
-    await this.token.transferOwnership(nominatedBeneficier, { from: owner});
-    let crowdsale = await Crowdsale.new(rate, crowdsaleWallet, this.token.address, nominatedBeneficier);
-    await this.token.approveOwner(crowdsale.address, crowdsaleAllowance, {from: nominatedBeneficier});
-    let allowance = await this.token.allowance(nominatedBeneficier, crowdsale.address);
-    allowance.should.be.bignumber.equal(crowdsaleAllowance);
-    let etherInWei = new BigNumber(100);
-    
-    await crowdsale.sendTransaction({ value: etherInWei, from: user1 });
-    let balance = await this.token.balanceOf(user1);
-    balance.should.be.bignumber.equal(rate * etherInWei);
-  });
-
 });
