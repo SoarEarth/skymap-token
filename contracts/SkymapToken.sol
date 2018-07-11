@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "../node_modules/openzeppelin-solidity/contracts/token/ERC827/ERC827Token.sol";
+import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 
 /**
@@ -13,7 +13,7 @@ import "../node_modules/openzeppelin-solidity/contracts/token/ERC20/PausableToke
  *
  */
  
-contract SkymapToken is ERC827Token, Pausable {
+contract SkymapToken is StandardToken, Pausable {
 
     string public constant symbol = "SKYM";
     string public constant name = "Skymap";
