@@ -20,12 +20,11 @@ contract SkymapToken is StandardToken, Pausable {
     uint8 public constant decimals = 18;
     uint public INITIAL_SUPPLY = 510000000 * (uint(10) ** decimals);
 
-    mapping (address => bool) public distributors;
+    mapping (address => bool) private distributors;
     bool public distributionFinished;
 
-    //todo
-    // add events when distributor is addedd and removed
-    // write tests to cover all situations
+    event DistributorAddressAdded(address addr);
+    event DistributorAddressRemoved(address addr);
 
     constructor(address beneficier) public {
         totalSupply_ = INITIAL_SUPPLY;
@@ -47,10 +46,16 @@ contract SkymapToken is StandardToken, Pausable {
 
     function addDistributorAddress (address _address) public onlyOwner whenDistributionNotFinished {
         distributors[_address] = true;
+        emit DistributorAddressAdded(_address);
     }
     
     function removeDistributorAddress (address _address) public onlyOwner whenDistributionNotFinished {
         distributors[_address] = false;
+        emit DistributorAddressRemoved(_address);
+    }
+
+    function distributor(address _address) public view whenDistributionNotFinished returns (bool) {
+        return distributors[_address];
     }
 
     function finishDistribution() public onlyOwner whenDistributionNotFinished {
