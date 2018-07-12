@@ -5,12 +5,12 @@ import "../node_modules/openzeppelin-solidity/contracts/lifecycle/Pausable.sol";
 
 /**
  * @title SkymapToken
- * @dev Implementation of ERC827Token with ability to pause transfers and approvals 
- * but approvedToken still will available to transfer to allow distribution during presale
- * and public sale in paused state. Only owner will have ability to approve token for transfer
- * in pause state.
- * The paused methods are copied from openzeppelin PauseableToken.
- *
+ * @dev Implementation of ERC20Token using Standard token from OpenZeppelin library
+ * with ability to pause transfers and approvals.
+ * There is aditional ability to distribute tokens when token is paused for nominated distributors
+ * by owner of the token. The distribution can perform until the the owner finishDistribution. 
+ * After that distributors doesn't have aditional ability than any other address.
+ * The implementation of pauseable methods was inspired in PauseableToken from OpenZeppelin library.
  */
  
 contract SkymapToken is StandardToken, Pausable {
@@ -34,30 +34,50 @@ contract SkymapToken is StandardToken, Pausable {
         emit Transfer(0x0, beneficier, INITIAL_SUPPLY);
     }
 
+    /**
+    * @dev Throws if token is paused and distribution is finished  
+    * or called by any account that's not distributors.
+    */
     modifier whenNotPausedOrDistributor() {
         require(!paused || (!distributionFinished && distributors[msg.sender] == true));
         _;
     }
-
+    /**
+    * @dev Throws if distribution is finished
+    */
     modifier whenDistributionNotFinished() {
         require(!distributionFinished);
         _;
     }
 
+    /**
+    * @dev add an address to the distributors
+    * @param _address address
+    */
     function addDistributorAddress (address _address) public onlyOwner whenDistributionNotFinished {
         distributors[_address] = true;
         emit DistributorAddressAdded(_address);
     }
-    
+
+    /**
+    * @dev remove an address to the distributors
+    * @param _address address
+    */
     function removeDistributorAddress (address _address) public onlyOwner whenDistributionNotFinished {
         distributors[_address] = false;
         emit DistributorAddressRemoved(_address);
     }
 
+    /**
+    * @dev getter to determine if address is in distributors list
+    */
     function distributor(address _address) public view whenDistributionNotFinished returns (bool) {
         return distributors[_address];
     }
 
+    /**
+    * @dev set the distribution finished and it can not be revert back
+    */
     function finishDistribution() public onlyOwner whenDistributionNotFinished {
         distributionFinished = true;
     }
