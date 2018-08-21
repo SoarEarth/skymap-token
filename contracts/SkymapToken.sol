@@ -18,7 +18,7 @@ contract SkymapToken is StandardToken, Pausable {
     string public constant symbol = "SKYM";
     string public constant name = "Skymap";
     uint8 public constant decimals = 18;
-    uint public INITIAL_SUPPLY = 510000000 * (uint(10) ** decimals);
+    uint public INITIAL_SUPPLY = 350000000 * (uint(10) ** decimals);
 
     mapping (address => bool) private distributors;
     bool public distributionFinished;

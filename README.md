@@ -7,7 +7,7 @@ The token smart contract was implemented using  [OpenZeppelin library](https://g
 - Symbol: **SKYM**
 - Name: **Skymap**
 - Decimals: **18**
-- Supply: **510,000,000 SKYM**
+- Supply: **350,000,000 SKYM**
 
 ## Technical stack
 

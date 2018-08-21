@@ -10,7 +10,7 @@ require('chai')
 
 contract('SkymapToken', function ([owner, user1, user2, user3, nominatedBeneficier, crowdsaleWallet, _]) {
 
-  const intitialSupply = 510000000 * (10 ** 18);
+  const intitialSupply = 350000000 * (10 ** 18);
   const amount = 1 * (10 ** 18); // 1SKYM
   const zero = new BigNumber(0);
   const rate = 3500; // rate 3500SKYM per ETH
