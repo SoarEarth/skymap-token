@@ -1,6 +1,6 @@
 # Soar Skymap token - ethereum smart contract
 
-Preminted ERC20 token with ability to be paused and distribute tokens during pre-sale and public sale by nominated address. After the distribution is done then owner will finish distribution and token will behave like normal pauseable ERC20 token contract.
+Preminted pauseable ERC20 token.
 
 The token smart contract was implemented using  [OpenZeppelin library](https://github.com/OpenZeppelin/openzeppelin-solidity).
 
