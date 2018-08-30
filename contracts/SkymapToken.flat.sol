@@ -434,11 +434,7 @@ contract PausableToken is StandardToken, Pausable {
 /**
  * @title SkymapToken
  * @dev Implementation of ERC20Token using Standard token from OpenZeppelin library
- * with ability to pause transfers and approvals.
- * There is aditional ability to distribute tokens when token is paused for nominated distributors
- * by owner of the token. The distribution can perform until the the owner finishDistribution. 
- * After that distributors doesn't have aditional ability than any other address.
- * The implementation of pauseable methods was inspired in PauseableToken from OpenZeppelin library.
+ * with ability to pause transfers and approvals. Token is paused after deployment.
  */
  
 contract SkymapToken is PausableToken {
@@ -446,7 +442,7 @@ contract SkymapToken is PausableToken {
     string public constant symbol = "SKYM";
     string public constant name = "Skymap";
     uint8 public constant decimals = 18;
-    uint public INITIAL_SUPPLY = 350000000 * (uint(10) ** decimals);
+    uint public INITIAL_SUPPLY = 350000000 * (uint(10) ** decimals); // 350,000,000 SKYM
 
     constructor(address beneficier) public {
         totalSupply_ = INITIAL_SUPPLY;

@@ -9,6 +9,8 @@ The token smart contract was implemented using  [OpenZeppelin library](https://g
 - Decimals: **18**
 - Supply: **350,000,000 SKYM**
 
+Implementation with imported contract is in SkymapToken.sol and there is also flattend version SkymapToken.flat.sol.
+
 ## Technical stack
 
 #### Smart contract/Solidity

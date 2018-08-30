@@ -1,6 +1,6 @@
 {
   "name": "skymap-token",
-  "version": "0.1.1",
+  "version": "0.2",
   "author": "Marek Tlacbaba",
   "dependencies": {
     "openzeppelin-solidity": "1.12.0"
