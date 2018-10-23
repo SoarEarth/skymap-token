@@ -60,3 +60,18 @@ In order to run the Skymap, you will need [Node.js](https://nodejs.org) (tested 
     // Runs Truffle's test suite for smart contract tests.
     truffle test
     ```
+
+
+## Generating flat version of contract
+
+1. Install truffle-flattener.
+    ```javascript    
+    npm install -g truffle-flattener -g
+    ```
+
+2. Delete old version of SkymapToken.flat.sol
+
+3. Run flattener
+    ```javascript
+    truffle-flattener contracts/SkymapToken.sol >> contracts/SkymapToken.flat.sol
+    ```
